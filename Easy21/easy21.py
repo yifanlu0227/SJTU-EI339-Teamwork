@@ -66,12 +66,14 @@ class Easy21():
 		return next_state,reward,terminal
 
 class Q_Learning():
-	def __init__(self,n_iter=1000):
+	def __init__(self,n_iter=100000):
 		# self.Q = np.zeros((11,22,2))  #only use 1-10,1-21
 		self.Q = self.init_Q_table()
 		self.n_iteration = n_iter
-		self.alpha = 0.001
-		self.gamma = 0.5
+		self.alpha = 0.1
+		self.gamma = 1
+		self.epsilon = 0.4
+		self.N = self.init_Q_table()
 
 	def init_Q_table(self):
 		dealer = np.arange(1,11)
@@ -88,15 +90,30 @@ class Q_Learning():
 		player_score = np.random.randint(1,11)
 		ori_state = (dealer_score,player_score)
 		ori_action = np.random.randint(2)
+		totalreward = 0
 		terminal = False
+		# The following is the main step for every-visit MC evaluation.
+		# For TD, alpha should be set constant, and there is no need to calculate "totalreward"
 		while not terminal:	
 			state,reward,terminal = game.step(ori_state,ori_action)
 
-			self.Q[ori_state][ori_action] = (1-self.alpha)*self.Q[ori_state][ori_action] + \
-											self.alpha*(reward+self.gamma*max(self.Q.get(state,(0,))))
+			totalreward += reward
+
+			self.N[ori_state][ori_action] += 1
+			alpha = 1/self.N[ori_state][ori_action]
+			epsilon = 100/(100+np.sum(self.N[ori_state][ori_action]))
+
+			self.Q[ori_state][ori_action] = (1-alpha)*self.Q[ori_state][ori_action] + \
+											alpha*(totalreward+self.gamma*max(self.Q.get(state,(0,))))
 			print(f"state: {ori_state} \t action: {ori_action} \t reward: {reward} \t value: {self.Q[ori_state][ori_action]}")
 			ori_state = state
-			ori_action = np.random.randint(2) # actually a new action at time t+1
+
+			tmp = np.random.rand()
+			if tmp < epsilon:
+				ori_action = np.random.randint(2)    # actually a new action at time t+1
+			else:
+				ori_action = np.argmax(self.Q)
+
 
 	def train(self):
 		for i in range(self.n_iteration):
