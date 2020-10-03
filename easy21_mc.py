@@ -117,14 +117,13 @@ class Q_Learning():
 		trace = []
 		while not terminal:
 
-
-			epsilon = 100 / (100 + np.sum(self.N[state][action]))
-
 			tmp = np.random.rand()
 			if tmp < self.epsilon:
 				action = np.random.randint(2)
 			else:
 				action = np.argmax(self.Q)
+			epsilon = 100 / (100 + np.sum(self.N[state][action]))
+			
 			self.N[state][action] += 1
 
 			trace.append((state, action))
