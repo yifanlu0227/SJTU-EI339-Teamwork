@@ -121,7 +121,7 @@ class Q_Learning():
 			if tmp < self.epsilon:
 				action = np.random.randint(2)
 			else:
-				action = np.argmax(self.Q)
+				action = np.argmax(self.Q[state])
 			epsilon = 100 / (100 + np.sum(self.N[state][action]))
 			
 			self.N[state][action] += 1
